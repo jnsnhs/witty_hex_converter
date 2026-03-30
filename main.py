@@ -1,10 +1,3 @@
-# DISCLAIMER: Die Inhalte in der Klasse TEXT sind zum Großteil mit Hilfe von
-# Google Gemini generiert worden. Normalerweise wäre es mein Anspruch, solche
-# Texte selbst zu formulieren, aber dafür war nun wirklich keine Zeit ;)
-# Außerhalb der Klasse TEXT wurde selbstverständlich nicht auf den Einsatz der
-# KI zurückgegriffen. Dafür macht mir das Basteln und Tüfteln am Code viel zu
-# viel Spaß. Warum sollte ich mir dieses Vergnügen von einer KI rauben lassen?
-#
 # Die Zahlen, die in der Funktion get_contrasting_color() mit den
 # RGB-Werten multipliziert weden, sind folgendem Blog-Artikel entnommen:
 # https://nemecek.be/blog/172/how-to-calculate-contrast-color-in-python
@@ -69,7 +62,7 @@ class View(ttk.Frame):
     def __init__(self, parent_window):
         super().__init__(parent_window)
         self.window = parent_window
-        self.grid(row = 0, column = 0, sticky = (tk.N, tk.E, tk.S, tk.W))
+        self.grid(row = 0, column = 0, sticky = "NSEW")
         self.controller = None
     
     def set_controller(self, controller):
@@ -82,28 +75,12 @@ class View(ttk.Frame):
             self.columnconfigure(i, weight = 1)
 
 
-class Window():
-
-    def configure_window(self, title, width, height):
-        self.title(title)
-        self.window_width = width
-        self.window_height = height
-        self.resizable(False, False)
-        self.columnconfigure(0, weight = 1)
-        self.rowconfigure(0, weight = 1)
-
-    def center_window_on_screen(self):
-        screen_width = self.winfo_screenwidth()
-        screen_height = self.winfo_screenheight()
-        center_x = int(screen_width / 2 - self.window_width / 2)
-        center_y = int(screen_height / 2 - self.window_height / 2)
-        self.geometry(
-            f'{self.window_width}x{self.window_height}+{center_x}+{center_y}')
-
-
 class MainModel():
 
     def __init__(self):
+        self.HEX_DIGITS = "0123456789"
+        self.HEX_CHARACTERS = "abcdef"
+        self.HEX_SYMBOLS = self.HEX_DIGITS + self.HEX_CHARACTERS
         self.hex_code = self.get_random_hex_string(6)
         self.rgb_code = self.get_rgb_from_hex_code(self.hex_code)
         self.css_name = self.get_name_of_hex_code(self.hex_code)
@@ -122,29 +99,29 @@ class MainModel():
         else:
             raise ValueError()
 
-    def is_hex_string(self, str_value):
+    def is_hex_string(self, str_value) -> bool:
         for i in str_value:
-            if i.casefold() not in "0123456789abcdef":
+            if i.casefold() not in self.HEX_SYMBOLS:
                 return False
         return True
 
-    def is_hex_code(self, str_value, valid_lengths = (3, 4, 6, 8)):
+    def is_hex_code(self, str_value, valid_lengths = (3, 4, 6, 8)) -> bool:
         if self.is_hex_string(str_value):
             return True if len(str_value) in valid_lengths else False
         else:
             return False
 
-    def get_decimal_from_hex_string(self, hex_str):
+    def get_decimal_from_hex_string(self, hex_str) -> int:
         decimal_value = 0
         for i in range(len(hex_str)):
-            if hex_str[i].casefold() in "abcdef":
-                summand = "abcdef".index(hex_str[i].casefold()) + 10
+            if hex_str[i].casefold() in self.HEX_CHARACTERS:
+                summand = self.HEX_CHARACTERS.index(hex_str[i].casefold()) + 10
             else:
                 summand = hex_str[i]
             decimal_value += int(summand) * 16 ** (len(hex_str) - 1 - i)
         return decimal_value
 
-    def get_rgb_from_hex_code(self, hex_code):
+    def get_rgb_from_hex_code(self, hex_code) -> tuple:
         if len(hex_code) in (3, 4):
             hex_code = self.get_full_hex_code(hex_code)
         red = self.get_decimal_from_hex_string(hex_code[0:2])
@@ -156,16 +133,16 @@ class MainModel():
         else:
             return (red, green, blue)
 
-    def get_name_of_hex_code(self, search_hex):
+    def get_name_of_hex_code(self, search_hex) -> str:
         for css3_name, hex in COLOR_NAMES.items():  
             if hex.casefold() == search_hex.casefold():
                 return css3_name
         return ""
 
-    def get_random_hex_string(self, length):
-        return ''.join(choices("0123456789abcdef", k=length))
+    def get_random_hex_string(self, length) -> str:
+        return ''.join(choices(self.HEX_SYMBOLS, k=length))
 
-    def get_full_hex_code(self, short_hex_code):
+    def get_full_hex_code(self, short_hex_code) -> str:
         return ''.join([i * 2 for i in short_hex_code])
 
     def unique_colors_converted(self):
@@ -178,7 +155,6 @@ class MainView(View):
         super().__init__(parent_window)
         self.PADDING_X = 15
         self.PADDING_Y = 15
-        self.controller = None
         self.create_grid(7, 1)
         for i in range(7):
             if i != 1: self.grid_rowconfigure(i, weight = 0)
@@ -196,14 +172,14 @@ class MainView(View):
             self, text = '', font = ('Courier', 20, 'bold'), 
             height = 2, relief = 'groove')
         self.label_rgb_code.grid(
-            row = 0, column = 0, sticky = (tk.N, tk.W, tk.E),
+            row = 0, column = 0, sticky = "NEW",
             ipadx = 50, ipady = 50, padx = self.PADDING_X, pady=self.PADDING_Y)
         
     def create_color_name_label(self):
         self.label_css_name = tk.Label(
             self, text = '', font = ('Arial', 8, 'bold'))
         self.label_css_name.grid(
-            row = 0, column = 0, sticky = (tk.S, tk.W, tk.E), 
+            row = 0, column = 0, sticky = "SEW", 
             padx = self.PADDING_X + 7, pady = (0, 60))
         self.label_css_name.grid_remove()
 
@@ -211,7 +187,7 @@ class MainView(View):
         self.comment_frame = ttk.LabelFrame(
             self, text='Die Stimmme der KI sagt:', labelanchor = tk.N)
         self.comment_frame.grid(
-            row = 1, column=0, sticky = (tk.N, tk.W, tk.S, tk.E), 
+            row = 1, column=0, sticky = "NSEW", 
             padx= self.PADDING_X)
         self.comment = tk.StringVar()
         self.comment_frame.grid_rowconfigure(0, weight = 1)
@@ -220,7 +196,7 @@ class MainView(View):
             self.comment_frame, textvariable = self.comment, wraplength = 330, 
             justify = tk.CENTER, anchor = tk.N, foreground = "#444444")
         self.label_comment.grid(
-            row = 0, column = 0, sticky = (tk.W, tk.E))
+            row = 0, column = 0, sticky = "EW")
 
     def create_combobox(self):
         self.user_input = tk.StringVar()
@@ -229,7 +205,7 @@ class MainView(View):
             justify = tk.CENTER, state = 'normal', height = 20,
             value = tuple(COLOR_NAMES.keys()))
         self.cbox_color_select.grid(
-            row = 2, column = 0, sticky = (tk.W, tk.E), ipadx = 30, ipady = 10, 
+            row = 2, column = 0, sticky = "EW", ipadx = 30, ipady = 10, 
             pady = (self.PADDING_Y, self.PADDING_Y/2), padx = self.PADDING_X)
         self.cbox_color_select.bind(
             '<<ComboboxSelected>>', self.on_select_color_name)
@@ -241,14 +217,14 @@ class MainView(View):
         self.button_convert = ttk.Button(
             self, text = TEXT.LABEL_CONVERT_BTN, width = 20)
         self.button_convert.grid(
-            row = 3, column = 0, sticky = (tk.W, tk.E),
+            row = 3, column = 0, sticky = "EW",
             pady = (0, self.PADDING_Y/2), padx = self.PADDING_X)
         self.button_convert['command'] = self.on_click_convert_button
 
     def create_random_button(self):
         self.button_random = ttk.Button(self, text = TEXT.LABEL_RANDOM_BTN)
         self.button_random.grid(
-            row = 4, column = 0, sticky = (tk.W, tk.E), 
+            row = 4, column = 0, sticky = "EW", 
             padx = self.PADDING_X, pady = (0, self.PADDING_Y/2))
         self.button_random['command'] = self.on_click_random_button
 
@@ -355,10 +331,6 @@ class MainController:
                 self.view.label_rgb_code['text'] = TEXT.LABEL_EMPTY_INPUT
             case 'TRANSPARENT':
                 self.view.label_rgb_code['text'] = TEXT.LABEL_TRANSPARENT_COLOR
-                        
-    def messagebox_secret_found(self):
-        msgbox.showinfo(title = TEXT.SECRET_TITLE, message = TEXT.SECRET_MSG,
-                        detail = TEXT.SECRET_DETAIL)
 
     def comment_on_hex_code(self, hex_input):
         match len(hex_input):
@@ -387,7 +359,7 @@ class MainController:
         self.app.call('wm', 'attributes', '.', '-topmost', bool_value)
 
 
-class MainWindow(Window, tk.Tk):
+class MainWindow(tk.Tk):
 
     def __init__(self):
         super().__init__()
@@ -397,6 +369,22 @@ class MainWindow(Window, tk.Tk):
         self.view = MainView(self)
         self.controller = MainController(self, self.model, self.view)
         self.view.set_controller(self.controller)
+        
+    def configure_window(self, title, width, height):
+        self.title(title)
+        self.window_width = width
+        self.window_height = height
+        self.resizable(False, False)
+        self.columnconfigure(0, weight = 1)
+        self.rowconfigure(0, weight = 1)
+
+    def center_window_on_screen(self):
+        screen_width = self.winfo_screenwidth()
+        screen_height = self.winfo_screenheight()
+        center_x = int(screen_width / 2 - self.window_width / 2)
+        center_y = int(screen_height / 2 - self.window_height / 2)
+        self.geometry(
+            f"{self.window_width}x{self.window_height}+{center_x}+{center_y}")
 
 
 app = MainWindow()
