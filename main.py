@@ -9,31 +9,54 @@
 import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox as msgbox
+
+import sys
+
 from random import random, choice, choices
+
 from ctypes import windll
 windll.shcore.SetProcessDpiAwareness(1)
 
 import csv, json
 
-def import_color_names_as_dict(path_to_file) -> dict:
+def file_loading_error(path_to_file):
+    msgbox.showerror(
+        title="Fehlermeldung", 
+        message="Das Programm kann nicht gestartet werden.", 
+        detail=f"Die Datei\n\n{path_to_file}\n\nkonnte nicht eingelesen werden."
+    )
+    sys.exit(0)
+    
+def import_color_names_as_dict(path_to_file) -> dict|None:
     result = dict()
-    with open(path_to_file, "r", encoding="utf8") as csv_file:
-        for (color_name, color_value) in csv.reader(csv_file):
-            result[color_name] = color_value
-    return result
+    try:    
+        with open(path_to_file, "r", encoding="utf8") as csv_file:
+            for (color_name, color_value) in csv.reader(csv_file):
+                result[color_name] = color_value
+    except Exception:
+        file_loading_error(path_to_file)
+    else:
+        return result
 
-def import_text_file_as_list(path_to_file: str) -> list:
+def import_text_file_as_list(path_to_file: str) -> list|None:
     result = list()
-    with open(path_to_file, "r", encoding="utf8") as text_file:
-        for line in text_file.readlines():
-            line = line.strip("\n")
-            result.append(line)
-    return result
+    try:
+        with open(path_to_file, "r", encoding="utf8") as text_file:
+            for line in text_file.readlines():
+                line = line.strip("\n")
+                result.append(line)
+    except Exception:
+        file_loading_error(path_to_file)
+    else:
+        return result
 
-def import_json_file_as_dict(path_to_file) -> dict:
-    with open(path_to_file, "r", encoding="utf8") as json_file:
-        json_data = json_file.read()
-        return json.loads(json_data)
+def import_json_file_as_dict(path_to_file) -> dict|None:
+    try:
+        with open(path_to_file, "r", encoding="utf8") as json_file:
+            json_data = json_file.read()
+            return json.loads(json_data)
+    except Exception:
+        file_loading_error(path_to_file)
 
 COLOR_NAMES = import_color_names_as_dict("./res/named_colors.csv")
 
@@ -159,6 +182,7 @@ class MainView(View):
         for i in range(7):
             if i != 1: self.grid_rowconfigure(i, weight = 0)
         self.grid_rowconfigure(1, weight = 1)
+        
         self.create_rgb_color_box()
         self.create_color_name_label()
         self.create_comment_label()
@@ -215,28 +239,39 @@ class MainView(View):
 
     def create_convert_button(self):
         self.button_convert = ttk.Button(
-            self, text = TEXT.LABEL_CONVERT_BTN, width = 20)
+            self,
+            text=TEXT.LABEL_CONVERT_BTN,
+            width=20,
+            command=lambda: self.on_click_convert_button()
+            )
         self.button_convert.grid(
             row = 3, column = 0, sticky = "EW",
-            pady = (0, self.PADDING_Y/2), padx = self.PADDING_X)
-        self.button_convert['command'] = self.on_click_convert_button
+            pady = (0, self.PADDING_Y/2), padx = self.PADDING_X
+            )
 
     def create_random_button(self):
-        self.button_random = ttk.Button(self, text = TEXT.LABEL_RANDOM_BTN)
+        self.button_random = ttk.Button(
+            self, 
+            text=TEXT.LABEL_RANDOM_BTN,
+            command=lambda: self.on_click_random_button()
+            )
         self.button_random.grid(
             row = 4, column = 0, sticky = "EW", 
-            padx = self.PADDING_X, pady = (0, self.PADDING_Y/2))
-        self.button_random['command'] = self.on_click_random_button
+            padx = self.PADDING_X, pady = (0, self.PADDING_Y/2)
+            )
 
     def create_checkbox(self):
         self.window_is_topmost = tk.BooleanVar()
         self.checkbox_topmost = ttk.Checkbutton(
-            self, text = TEXT.LABEL_CHECKBOX, 
-            variable = self.window_is_topmost)
+            self,
+            text=TEXT.LABEL_CHECKBOX,
+            variable=self.window_is_topmost,
+            command=lambda: self.on_click_checkbox()
+            )
         self.checkbox_topmost.grid(
             row = 6, column = 0, padx = self.PADDING_X, 
-            pady = (self.PADDING_Y/2, self.PADDING_Y))
-        self.checkbox_topmost['command'] = self.on_click_checkbox
+            pady = (self.PADDING_Y/2, self.PADDING_Y)
+            )
 
     def on_click_checkbox(self):
         self.controller.toggle_topmost(self.window_is_topmost.get())
