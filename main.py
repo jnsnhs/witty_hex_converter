@@ -9,17 +9,11 @@
 import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox as msgbox
-
 import sys
-
 from random import random, choice, choices
-
-from ctypes import windll
-windll.shcore.SetProcessDpiAwareness(1)
-
 import csv, json
 
-def file_loading_error(path_to_file):
+def display_file_loading_error(path_to_file):
     msgbox.showerror(
         title="Fehlermeldung", 
         message="Das Programm kann nicht gestartet werden.", 
@@ -27,14 +21,14 @@ def file_loading_error(path_to_file):
     )
     sys.exit(0)
     
-def import_color_names_as_dict(path_to_file) -> dict|None:
+def import_color_names_as_dict(path_to_file) -> dict:
     result = dict()
     try:    
         with open(path_to_file, "r", encoding="utf8") as csv_file:
             for (color_name, color_value) in csv.reader(csv_file):
                 result[color_name] = color_value
     except Exception:
-        file_loading_error(path_to_file)
+        display_file_loading_error(path_to_file)
     else:
         return result
 
@@ -46,7 +40,7 @@ def import_text_file_as_list(path_to_file: str) -> list|None:
                 line = line.strip("\n")
                 result.append(line)
     except Exception:
-        file_loading_error(path_to_file)
+        display_file_loading_error(path_to_file)
     else:
         return result
 
@@ -56,19 +50,19 @@ def import_json_file_as_dict(path_to_file) -> dict|None:
             json_data = json_file.read()
             return json.loads(json_data)
     except Exception:
-        file_loading_error(path_to_file)
+        display_file_loading_error(path_to_file)
 
 COLOR_NAMES = import_color_names_as_dict("./res/named_colors.csv")
 
 class TEXT:
     APP_TITLE = "HEX 9000"
     DEFAULT_COMMENT = "Bitte geben Sie einen gültigen\nHex-Wert ein oder wählen Sie eine\nder vordefinierten Webfarbe aus."
-    LABEL_RANDOM_BTN = "Zufälligen Hex-Wert erzeugen"
-    LABEL_CONVERT_BTN = "Eingabe nach RGB konvertieren"
-    LABEL_CHECKBOX = "Fenster immer oben anzeigen"
+    LABEL_RANDOM_BTN = "Zufälligen Wert erzeugen"
+    LABEL_CONVERT_BTN = "Eingabe konvertieren"
+    LABEL_CHECKBOX = "Fenster im Vordergrund halten"
     LABEL_INVALID_INPUT = "Eingabe\nungültig"
     LABEL_EMPTY_INPUT = "Leere\nEingabe"
-    LABEL_TRANSPARENT_COLOR = "Anzeige\nnicht möglich"
+    LABEL_TRANSPARENT_COLOR = "Anzeige\nnicht\nmöglich"
     
     NAMED_CODES = import_json_file_as_dict("./res/comments_named_codes.json")
     EIGHT_DIGIT_CODES = import_text_file_as_list("./res/comments_eight-digit_codes.txt")
@@ -80,12 +74,13 @@ class TEXT:
     MISC_INVALID_INPUTS = import_text_file_as_list("./res/comments_invalid_input.txt")
 
 
+
 class View(ttk.Frame):
     
     def __init__(self, parent_window):
         super().__init__(parent_window)
         self.window = parent_window
-        self.grid(row = 0, column = 0, sticky = "NSEW")
+        self.grid(row = 0, column = 0, sticky = "nesw")
         self.controller = None
     
     def set_controller(self, controller):
@@ -178,11 +173,10 @@ class MainView(View):
         super().__init__(parent_window)
         self.PADDING_X = 15
         self.PADDING_Y = 15
-        self.create_grid(7, 1)
-        for i in range(7):
+        self.create_grid(6, 1)
+        for i in range(6):
             if i != 1: self.grid_rowconfigure(i, weight = 0)
-        self.grid_rowconfigure(1, weight = 1)
-        
+        self.grid_rowconfigure(1, weight = 1)        
         self.create_rgb_color_box()
         self.create_color_name_label()
         self.create_comment_label()
@@ -193,46 +187,57 @@ class MainView(View):
 
     def create_rgb_color_box(self):
         self.label_rgb_code = tk.Label(
-            self, text = '', font = ('Courier', 20, 'bold'), 
-            height = 2, relief = 'groove')
+            self, text = '', font = ('Courier', 18, 'bold'), 
+            height=4, relief = 'groove')
         self.label_rgb_code.grid(
-            row = 0, column = 0, sticky = "NEW",
-            ipadx = 50, ipady = 50, padx = self.PADDING_X, pady=self.PADDING_Y)
+            row = 0, column = 0, sticky = "ew",
+            ipadx = 0, ipady = 0, padx = self.PADDING_X, pady=self.PADDING_Y)
         
     def create_color_name_label(self):
         self.label_css_name = tk.Label(
             self, text = '', font = ('Arial', 8, 'bold'))
         self.label_css_name.grid(
-            row = 0, column = 0, sticky = "SEW", 
-            padx = self.PADDING_X + 7, pady = (0, 60))
+            row=0,
+            column=0, 
+            sticky="s", 
+            padx=self.PADDING_X+7,
+            pady=(0, 40)
+            )
         self.label_css_name.grid_remove()
 
     def create_comment_label(self):
-        self.comment_frame = ttk.LabelFrame(
-            self, text='Die Stimmme der KI sagt:', labelanchor = tk.N)
+        self.comment_frame = tk.LabelFrame(
+            self, text='Die Stimmme der KI sagt:', labelanchor="n", height="550"
+            )
         self.comment_frame.grid(
-            row = 1, column=0, sticky = "NSEW", 
-            padx= self.PADDING_X)
+            row=1, column=0, sticky="nesw", padx=self.PADDING_X)
         self.comment = tk.StringVar()
         self.comment_frame.grid_rowconfigure(0, weight = 1)
         self.comment_frame.grid_columnconfigure(0, weight = 1)
-        self.label_comment = ttk.Label(
-            self.comment_frame, textvariable = self.comment, wraplength = 330, 
-            justify = tk.CENTER, anchor = tk.N, foreground = "#444444")
+        self.label_comment = tk.Label(
+            self.comment_frame, textvariable=self.comment, wraplength=220, height=5,
+            justify = "center", anchor = "center"
+            )
         self.label_comment.grid(
-            row = 0, column = 0, sticky = "EW")
+            row = 0, column = 0, sticky = "ew")
 
     def create_combobox(self):
         self.user_input = tk.StringVar()
         self.cbox_color_select = ttk.Combobox(
-            self, textvariable = self.user_input, font = ('Courier', 20),
-            justify = tk.CENTER, state = 'normal', height = 20,
-            value = tuple(COLOR_NAMES.keys()))
+            self,
+            textvariable=self.user_input,
+            font=('Courier', 14),
+            width= 20,
+            justify="center", state='normal', height=20,
+            values=tuple(COLOR_NAMES.keys())
+            )
         self.cbox_color_select.grid(
-            row = 2, column = 0, sticky = "EW", ipadx = 30, ipady = 10, 
-            pady = (self.PADDING_Y, self.PADDING_Y/2), padx = self.PADDING_X)
-        self.cbox_color_select.bind(
-            '<<ComboboxSelected>>', self.on_select_color_name)
+            row=2, column=0, sticky="ew", #ipadx = 30,
+            ipady = 5, 
+            pady = (self.PADDING_Y, self.PADDING_Y/2), 
+            padx = self.PADDING_X
+            )
+        self.cbox_color_select.bind('<<ComboboxSelected>>', self.on_select_color_name)
         self.cbox_color_select.bind('<Return>', self.on_return_combobox)
         self.cbox_color_select.focus()
         self.cbox_color_select.select_range(0, 7)
@@ -241,11 +246,11 @@ class MainView(View):
         self.button_convert = ttk.Button(
             self,
             text=TEXT.LABEL_CONVERT_BTN,
-            width=20,
+            #width=20,
             command=lambda: self.on_click_convert_button()
             )
         self.button_convert.grid(
-            row = 3, column = 0, sticky = "EW",
+            row = 3, column = 0, sticky = "ew",
             pady = (0, self.PADDING_Y/2), padx = self.PADDING_X
             )
 
@@ -256,7 +261,7 @@ class MainView(View):
             command=lambda: self.on_click_random_button()
             )
         self.button_random.grid(
-            row = 4, column = 0, sticky = "EW", 
+            row = 4, column = 0, sticky = "ew", 
             padx = self.PADDING_X, pady = (0, self.PADDING_Y/2)
             )
 
@@ -269,8 +274,8 @@ class MainView(View):
             command=lambda: self.on_click_checkbox()
             )
         self.checkbox_topmost.grid(
-            row = 6, column = 0, padx = self.PADDING_X, 
-            pady = (self.PADDING_Y/2, self.PADDING_Y)
+            row = 6, column = 0, sticky="",
+            padx = self.PADDING_X, pady = (self.PADDING_Y/2, self.PADDING_Y)
             )
 
     def on_click_checkbox(self):
@@ -398,8 +403,11 @@ class MainWindow(tk.Tk):
 
     def __init__(self):
         super().__init__()
-        self.configure_window(TEXT.APP_TITLE, 380, 600)
-        self.center_window_on_screen()
+        # self.configure_window(TEXT.APP_TITLE, 380, 600)
+        self.title(TEXT.APP_TITLE)
+        self.columnconfigure(0, weight = 1)
+        self.rowconfigure(0, weight = 1)
+        self.resizable(False, False)
         self.model = MainModel()
         self.view = MainView(self)
         self.controller = MainController(self, self.model, self.view)
@@ -409,7 +417,6 @@ class MainWindow(tk.Tk):
         self.title(title)
         self.window_width = width
         self.window_height = height
-        self.resizable(False, False)
         self.columnconfigure(0, weight = 1)
         self.rowconfigure(0, weight = 1)
 
