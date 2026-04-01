@@ -57,15 +57,14 @@ COLOR_NAMES = import_color_names_as_dict("./res/named_colors.csv")
 
 class TEXT:
     APP_TITLE = "HEX 9000"
-    DEFAULT_COMMENT = "Bitte geben Sie einen gültigen\nHex-Wert ein oder wählen Sie eine\nder vordefinierten Webfarbe aus."
     LABEL_RANDOM_BTN = "Zufälligen Wert erzeugen"
     LABEL_CONVERT_BTN = "Eingabe konvertieren"
     LABEL_CHECKBOX = "Fenster im Vordergrund halten"
     LABEL_INVALID_INPUT = "Eingabe\nungültig"
     LABEL_EMPTY_INPUT = "Leere\nEingabe"
     LABEL_TRANSPARENT_COLOR = "Anzeige\nnicht\nmöglich"
-    LABEL_COMMENT_FRAME_TITLE = "Die allwissende KI sagt:"
-    
+    DEFAULT_COMMENT = "Bitte geben Sie einen gültigen\nHex-Wert ein oder wählen Sie eine\nder vordefinierten Webfarben aus."
+                
     NAMED_CODES = import_json_file_as_dict("./res/comments_named_codes.json")
     EIGHT_DIGIT_CODES = import_text_file_as_list("./res/comments_eight-digit_codes.txt")
     FOUR_DIGIT_CODES = import_text_file_as_list("./res/comments_four-digit_codes.txt")
@@ -75,6 +74,38 @@ class TEXT:
     NO_INPUT = import_text_file_as_list("./res/comments_no_input.txt")
     MISC_INVALID_INPUTS = import_text_file_as_list("./res/comments_invalid_input.txt")
 
+class Labels:
+    COMMENT_FRAME_DEFAULT = "Die allwissende KI rät:"
+    COMMENT_FRAME_VALID_CODE = [
+        "Die KI kommentiert anerkennend:",
+        "Die KI gibt sich gönnerhaft:",
+        "Die KI lobt Sie und Ihr Tun:",
+        "Die KI bestärkt Ihre Eingabe:"
+    ]
+    COMMENT_FRAME_RANDOM_REMARK = [
+        "Die KI gerät in Plauderlaune:",
+        "Die KI kommt vom Thema ab:",
+        "Die KI beginnt zu halluzinieren:",
+        "Die KI tut allzu menschlich:"
+    ]
+    COMMENT_FRAME_WEB_COLOR = [
+        "Die KI zitiert unbekannte Quellen:",
+        "Die KI prahlt mit fremdem Wissen:",
+        "Die KI greift in ihre Blackbox:",
+        "Die KI tut erfahren und eloquent:"
+    ]
+    COMMENT_FRAME_BAD_INPUT = [
+        "Die KI wundert sich:",
+        "Die KI ist irritiert:",
+        "Die KI gibt zu bedenken:",
+        "Die KI zweifelt an Ihnen:"
+    ]
+    COMMENT_FRAME_TRANSPARENCY = [
+        "Die KI gibt kleinlaut nach:",
+        "Die KI stößt an ihre Grenzen:",
+        "Die KI kann auch nicht alles:",
+        "Die KI verabscheut Transparenz:",
+    ]
 
 
 class View(ttk.Frame):
@@ -226,7 +257,8 @@ class MainView(View):
     def create_comment_label(self):
         self.comment_frame = tk.LabelFrame(
             self,
-            text=TEXT.LABEL_COMMENT_FRAME_TITLE, labelanchor="n", 
+            text="", 
+            labelanchor="n", 
             relief="groove"
             )
         self.comment_frame.grid(
@@ -348,6 +380,7 @@ class MainController:
         self.view = view
         self.view.user_input.set(f'#{self.model.hex_code}')
         self.validate_input(self.model.hex_code)
+        self.view.comment_frame.config(text=Labels.COMMENT_FRAME_DEFAULT)
         self.insert_comment(TEXT.DEFAULT_COMMENT)
         self.view.cbox_color_select.select_range(0,7)
         
@@ -366,23 +399,28 @@ class MainController:
         except ValueError:
             if self.model.is_hex_code(str(str_value), (4,)):
                 self.view.user_input.set(f'#{str_value}')
+                rnd_frame_title = choice(Labels.COMMENT_FRAME_TRANSPARENCY)
                 self.insert_comment(choice(TEXT.FOUR_DIGIT_CODES))
                 self.display_message('TRANSPARENT')
             elif self.model.is_hex_code(str(str_value), (8,)):
                 self.view.user_input.set(f'#{str_value}')
+                rnd_frame_title = choice(Labels.COMMENT_FRAME_TRANSPARENCY)
                 self.insert_comment(choice(TEXT.EIGHT_DIGIT_CODES))
                 self.display_message('TRANSPARENT')
             elif str_value == "":
+                rnd_frame_title = choice(Labels.COMMENT_FRAME_BAD_INPUT)
                 self.insert_comment(choice(TEXT.NO_INPUT))
                 self.display_message('EMPTY_INPUT')
             else:
+                rnd_frame_title = choice(Labels.COMMENT_FRAME_BAD_INPUT)
                 self.insert_comment(choice(TEXT.MISC_INVALID_INPUTS))
                 self.display_message('INVALID_INPUT')
+            self.view.comment_frame.config(text=rnd_frame_title)
     
     def display_rgb_code(self):
         self.view.label_css_name.grid_remove()
         rgb = self.model.rgb_code
-        self.view.label_rgb_code['text'] = f"({rgb[0]},{rgb[1]},{rgb[2]})"
+        self.view.label_rgb_code["text"] = f"({rgb[0]},{rgb[1]},{rgb[2]})"
         self.view.set_rgb_label_bg_color(self.model.hex_code)
         self.view.set_font_color(self.get_contrasting_color())
         if self.model.css_name:
@@ -404,16 +442,21 @@ class MainController:
     def comment_on_hex_code(self, hex_input):
         match len(hex_input):
             case 3:
-                self.insert_comment(choice(TEXT.THREE_DIGIT_CODES))
+                rnd_frame_title = choice(Labels.COMMENT_FRAME_VALID_CODE)
+                rnd_comment = choice(TEXT.THREE_DIGIT_CODES)
             case 6:
                 try:
-                    self.insert_comment(
-                        choice(TEXT.NAMED_CODES[hex_input.upper()]))
+                    rnd_frame_title = choice(Labels.COMMENT_FRAME_WEB_COLOR)
+                    rnd_comment = choice(TEXT.NAMED_CODES[hex_input.upper()])
                 except:
                     if random() < 0.75:
-                        self.insert_comment(choice(TEXT.MISC_CODES))
+                        rnd_frame_title = choice(Labels.COMMENT_FRAME_VALID_CODE)
+                        rnd_comment = choice(TEXT.MISC_CODES)
                     else:
-                        self.insert_comment(choice(TEXT.RANDOM))
+                        rnd_frame_title = choice(Labels.COMMENT_FRAME_RANDOM_REMARK)
+                        rnd_comment = choice(TEXT.RANDOM)
+        self.view.comment_frame.config(text=rnd_frame_title)
+        self.insert_comment(rnd_comment)
 
     def insert_comment(self, comment):
         self.view.comment.set(comment)
