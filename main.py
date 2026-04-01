@@ -7,13 +7,14 @@
 # ermittelt wird, ob Schwarz oder Weiß den besseren Kontrast darstellt.
 
 import tkinter as tk
+import tkinter.font
 from tkinter import ttk
 from tkinter import messagebox as msgbox
 import sys
 from random import random, choice, choices
 import csv, json
 
-def display_file_loading_error(path_to_file):
+def display_file_loading_error(path_to_file) -> None:
     msgbox.showerror(
         title="Fehlermeldung", 
         message="Das Programm kann nicht gestartet werden.", 
@@ -21,7 +22,7 @@ def display_file_loading_error(path_to_file):
     )
     sys.exit(0)
     
-def import_color_names_as_dict(path_to_file) -> dict:
+def import_color_names_as_dict(path_to_file) -> dict|None:
     result = dict()
     try:    
         with open(path_to_file, "r", encoding="utf8") as csv_file:
@@ -187,17 +188,32 @@ class MainView(View):
         self.create_checkbox()
 
     def create_rgb_color_box(self):
+        match sys.platform:
+            case "win32":
+                FONT_STYLE = ("Courier", 20, "bold")
+                LABEL_HEIGHT = 4
+            case "darwin":
+                FONT_STYLE = ("Courier", 22)
+                LABEL_HEIGHT = 5
+            case _:
+                FONT_STYLE = ("Courier", 20)
+                LABEL_HEIGHT = 5
         self.label_rgb_code = tk.Label(
-            self, text = '', font = ('Courier', 22), 
-            height=5, relief = "groove")
+            self, text = '', font=FONT_STYLE,
+            height=LABEL_HEIGHT, relief = "groove")
         self.label_rgb_code.grid(
             row = 0, column = 0, sticky = "ew",
             ipadx = 0, ipady = 0, padx = self.PADDING_X, pady=self.PADDING_Y)
         
     def create_color_name_label(self):
-        self.label_css_name = tk.Label(
-            self, text = ''#, font = ('Arial', 8, 'bold')
-            )
+        match sys.platform:
+            case "win32":
+                FONT_STYLE = tkinter.font.Font(size=9, weight="bold")
+            case "darwin":
+                FONT_STYLE = tkinter.font.Font()
+            case _:
+                FONT_STYLE = tkinter.font.Font()
+        self.label_css_name = tk.Label(self, text = "", font=FONT_STYLE)
         self.label_css_name.grid(
             row=0,
             column=0, 
@@ -211,9 +227,7 @@ class MainView(View):
         self.comment_frame = tk.LabelFrame(
             self,
             text=TEXT.LABEL_COMMENT_FRAME_TITLE, labelanchor="n", 
-            relief="groove",
-            #foreground="#888"
-            #height="550"
+            relief="groove"
             )
         self.comment_frame.grid(
             row=1, column=0, sticky="nesw", padx=self.PADDING_X)
@@ -228,12 +242,16 @@ class MainView(View):
             row = 0, column = 0, sticky = "ew")
 
     def create_combobox(self):
+        match sys.platform:
+            case "win32": COMBO_BOX_WIDTH = 20
+            case "darwin": COMBO_BOX_WIDTH = 28
+            case _: COMBO_BOX_WIDTH = 30
         self.user_input = tk.StringVar()
         self.cbox_color_select = ttk.Combobox(
             self,
             textvariable=self.user_input,
             font=('Courier', 14),
-            width= 28,
+            width=COMBO_BOX_WIDTH,
             justify="center", state='normal',
             values=tuple(COLOR_NAMES.keys())
             )
@@ -252,7 +270,6 @@ class MainView(View):
         self.button_convert = ttk.Button(
             self,
             text=TEXT.LABEL_CONVERT_BTN,
-            #width=20,
             command=lambda: self.on_click_convert_button()
             )
         self.button_convert.grid(
