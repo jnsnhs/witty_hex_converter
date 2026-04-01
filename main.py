@@ -63,6 +63,7 @@ class TEXT:
     LABEL_INVALID_INPUT = "Eingabe\nungültig"
     LABEL_EMPTY_INPUT = "Leere\nEingabe"
     LABEL_TRANSPARENT_COLOR = "Anzeige\nnicht\nmöglich"
+    LABEL_COMMENT_FRAME_TITLE = "Die allwissende KI sagt:"
     
     NAMED_CODES = import_json_file_as_dict("./res/comments_named_codes.json")
     EIGHT_DIGIT_CODES = import_text_file_as_list("./res/comments_eight-digit_codes.txt")
@@ -187,27 +188,32 @@ class MainView(View):
 
     def create_rgb_color_box(self):
         self.label_rgb_code = tk.Label(
-            self, text = '', font = ('Courier', 18, 'bold'), 
-            height=4, relief = 'groove')
+            self, text = '', font = ('Courier', 22), 
+            height=5, relief = "groove")
         self.label_rgb_code.grid(
             row = 0, column = 0, sticky = "ew",
             ipadx = 0, ipady = 0, padx = self.PADDING_X, pady=self.PADDING_Y)
         
     def create_color_name_label(self):
         self.label_css_name = tk.Label(
-            self, text = '', font = ('Arial', 8, 'bold'))
+            self, text = ''#, font = ('Arial', 8, 'bold')
+            )
         self.label_css_name.grid(
             row=0,
             column=0, 
-            sticky="s", 
+            sticky="", 
             padx=self.PADDING_X+7,
-            pady=(0, 40)
+            pady=(45, 0)
             )
         self.label_css_name.grid_remove()
 
     def create_comment_label(self):
         self.comment_frame = tk.LabelFrame(
-            self, text='Die Stimmme der KI sagt:', labelanchor="n", height="550"
+            self,
+            text=TEXT.LABEL_COMMENT_FRAME_TITLE, labelanchor="n", 
+            relief="groove",
+            #foreground="#888"
+            #height="550"
             )
         self.comment_frame.grid(
             row=1, column=0, sticky="nesw", padx=self.PADDING_X)
@@ -215,7 +221,7 @@ class MainView(View):
         self.comment_frame.grid_rowconfigure(0, weight = 1)
         self.comment_frame.grid_columnconfigure(0, weight = 1)
         self.label_comment = tk.Label(
-            self.comment_frame, textvariable=self.comment, wraplength=220, height=5,
+            self.comment_frame, textvariable=self.comment, wraplength=220, height=6,
             justify = "center", anchor = "center"
             )
         self.label_comment.grid(
@@ -227,13 +233,13 @@ class MainView(View):
             self,
             textvariable=self.user_input,
             font=('Courier', 14),
-            width= 20,
-            justify="center", state='normal', height=20,
+            width= 28,
+            justify="center", state='normal',
             values=tuple(COLOR_NAMES.keys())
             )
         self.cbox_color_select.grid(
-            row=2, column=0, sticky="ew", #ipadx = 30,
-            ipady = 5, 
+            row=2, column=0, sticky="news", #ipadx = 30,
+            #ipady = 5, 
             pady = (self.PADDING_Y, self.PADDING_Y/2), 
             padx = self.PADDING_X
             )
