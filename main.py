@@ -432,10 +432,10 @@ class MainWindow(tk.Tk):
 
     def __init__(self):
         super().__init__()
-        # self.configure_window(TEXT.APP_TITLE, 380, 600)
         self.title(TEXT.APP_TITLE)
-        self.columnconfigure(0, weight = 1)
-        self.rowconfigure(0, weight = 1)
+        self.set_icon()
+        self.columnconfigure(0, weight=1)
+        self.rowconfigure(0, weight=1)
         self.resizable(False, False)
         self.model = MainModel()
         self.view = MainView(self)
@@ -446,8 +446,8 @@ class MainWindow(tk.Tk):
         self.title(title)
         self.window_width = width
         self.window_height = height
-        self.columnconfigure(0, weight = 1)
-        self.rowconfigure(0, weight = 1)
+        self.columnconfigure(0, weight=1)
+        self.rowconfigure(0, weight=1)
 
     def center_window_on_screen(self):
         screen_width = self.winfo_screenwidth()
@@ -456,6 +456,16 @@ class MainWindow(tk.Tk):
         center_y = int(screen_height / 2 - self.window_height / 2)
         self.geometry(
             f"{self.window_width}x{self.window_height}+{center_x}+{center_y}")
+
+    def set_icon(self):
+        try:
+            if sys.platform == "win32":
+                self.iconbitmap("./res/icon.ico")
+            else:
+                icon_image = tk.PhotoImage(file='./res/icon.png')
+                self.iconphoto(False, icon_image)
+        except tk.TclError as exc:
+            print(exc)
 
 
 app = MainWindow()
