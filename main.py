@@ -243,14 +243,20 @@ class MainView(View):
 
     def create_combobox(self):
         match sys.platform:
-            case "win32": COMBO_BOX_WIDTH = 20
-            case "darwin": COMBO_BOX_WIDTH = 28
-            case _: COMBO_BOX_WIDTH = 30
+            case "win32":
+                COMBO_BOX_WIDTH = 20
+                FONT_STYLE = tkinter.font.Font(family="Courier", size=14)
+            case "darwin":
+                COMBO_BOX_WIDTH = 28
+                FONT_STYLE = tkinter.font.Font(family="Courier")
+            case _:
+                COMBO_BOX_WIDTH = 30
+                FONT_STYLE = tkinter.font.Font(family="Courier", size=14)
         self.user_input = tk.StringVar()
         self.cbox_color_select = ttk.Combobox(
             self,
             textvariable=self.user_input,
-            font=('Courier', 14),
+            font=FONT_STYLE,
             width=COMBO_BOX_WIDTH,
             justify="center", state='normal',
             values=tuple(COLOR_NAMES.keys())
@@ -264,7 +270,7 @@ class MainView(View):
         self.cbox_color_select.bind('<<ComboboxSelected>>', self.on_select_color_name)
         self.cbox_color_select.bind('<Return>', self.on_return_combobox)
         self.cbox_color_select.focus()
-        self.cbox_color_select.select_range(0, 7)
+        #self.cbox_color_select.select_range(0, 7)
 
     def create_convert_button(self):
         self.button_convert = ttk.Button(
