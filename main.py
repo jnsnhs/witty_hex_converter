@@ -57,14 +57,15 @@ COLOR_NAMES = import_color_names_as_dict("./res/named_colors.csv")
 
 class TEXT:
     APP_TITLE = "HEX 9000"
+    
     LABEL_RANDOM_BTN = "Zufälligen Wert erzeugen"
     LABEL_CONVERT_BTN = "Eingabe konvertieren"
     LABEL_CHECKBOX = "Fenster im Vordergrund halten"
     LABEL_INVALID_INPUT = "Eingabe\nungültig"
     LABEL_EMPTY_INPUT = "Leere\nEingabe"
     LABEL_TRANSPARENT_COLOR = "Anzeige\nnicht\nmöglich"
-    DEFAULT_COMMENT = "Bitte geben Sie einen gültigen\nHex-Wert ein oder wählen Sie eine\nder vordefinierten Webfarben aus."
-                
+    
+    DEFAULT_COMMENT = "Bitte geben Sie einen gültigen\nHex-Wert ein oder wählen Sie eine\nder vordefinierten Webfarben aus."            
     NAMED_CODES = import_json_file_as_dict("./res/comments_named_codes.json")
     EIGHT_DIGIT_CODES = import_text_file_as_list("./res/comments_eight-digit_codes.txt")
     FOUR_DIGIT_CODES = import_text_file_as_list("./res/comments_four-digit_codes.txt")
@@ -185,18 +186,18 @@ class MainModel():
             return (red, green, blue)
 
     def get_name_of_hex_code(self, search_hex) -> str:
-        for css3_name, hex in COLOR_NAMES.items():  
+        for css3_name, hex in COLOR_NAMES.items():
             if hex.casefold() == search_hex.casefold():
                 return css3_name
         return ""
 
     def get_random_hex_string(self, length) -> str:
-        return ''.join(choices(self.HEX_SYMBOLS, k=length))
+        return "".join(choices(self.HEX_SYMBOLS, k=length))
 
     def get_full_hex_code(self, short_hex_code) -> str:
-        return ''.join([i * 2 for i in short_hex_code])
+        return "".join([i * 2 for i in short_hex_code])
 
-    def unique_colors_converted(self):
+    def unique_colors_converted(self) -> int:
         return len(set(self.colors_converted))
 
 
@@ -209,7 +210,7 @@ class MainView(View):
         self.create_grid(6, 1)
         for i in range(6):
             if i != 1: self.grid_rowconfigure(i, weight = 0)
-        self.grid_rowconfigure(1, weight = 1)        
+        self.grid_rowconfigure(1, weight = 1)      
         self.create_rgb_color_box()
         self.create_color_name_label()
         self.create_comment_label()
@@ -294,15 +295,13 @@ class MainView(View):
             values=tuple(COLOR_NAMES.keys())
             )
         self.cbox_color_select.grid(
-            row=2, column=0, sticky="news", #ipadx = 30,
-            #ipady = 5, 
+            row=2, column=0, sticky="news",
             pady = (self.PADDING_Y, self.PADDING_Y/2), 
             padx = self.PADDING_X
             )
         self.cbox_color_select.bind('<<ComboboxSelected>>', self.on_select_color_name)
         self.cbox_color_select.bind('<Return>', self.on_return_combobox)
         self.cbox_color_select.focus()
-        #self.cbox_color_select.select_range(0, 7)
 
     def create_convert_button(self):
         self.button_convert = ttk.Button(
@@ -476,31 +475,24 @@ class MainWindow(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title(TEXT.APP_TITLE)
+        self.geometry(self.center_window_on_screen(275, 445))
+        self.resizable(False, False)
         self.set_icon()
         self.columnconfigure(0, weight=1)
         self.rowconfigure(0, weight=1)
-        self.resizable(False, False)
         self.model = MainModel()
         self.view = MainView(self)
         self.controller = MainController(self, self.model, self.view)
         self.view.set_controller(self.controller)
         
-    def configure_window(self, title, width, height):
-        self.title(title)
-        self.window_width = width
-        self.window_height = height
-        self.columnconfigure(0, weight=1)
-        self.rowconfigure(0, weight=1)
-
-    def center_window_on_screen(self):
+    def center_window_on_screen(self, window_width: int, window_height: int) -> str:
         screen_width = self.winfo_screenwidth()
         screen_height = self.winfo_screenheight()
-        center_x = int(screen_width / 2 - self.window_width / 2)
-        center_y = int(screen_height / 2 - self.window_height / 2)
-        self.geometry(
-            f"{self.window_width}x{self.window_height}+{center_x}+{center_y}")
+        margin_left = int(screen_width/2 - window_width/2)
+        margin_top = int(screen_height/2 - window_height/2)
+        return f"{window_width}x{window_height}+{margin_left}+{margin_top}"
 
-    def set_icon(self):
+    def set_icon(self) -> None:
         try:
             if sys.platform == "win32":
                 self.iconbitmap("./res/icon.ico")
