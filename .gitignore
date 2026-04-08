@@ -1,2 +1,4 @@
-test.py
-Python's unittest_ Writing Unit Tests for Your Code.pdf
+*.pdf
+*.af
+/build
+run.spec
