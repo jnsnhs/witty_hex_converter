@@ -45,11 +45,11 @@ class MainModel():
         self.colors_converted = list()
 
     @property
-    def hex_code(self):
+    def hex_code(self) -> str:
         return self._hex_code
 
     @hex_code.setter
-    def hex_code(self, value):
+    def hex_code(self, value: str) -> None:
         if self.is_hex_code(value, (3, 6)):
             self._hex_code = value
             self.rgb_code = self.get_rgb_from_hex_code(value)
@@ -57,19 +57,19 @@ class MainModel():
         else:
             raise ValueError()
 
-    def is_hex_string(self, str_value) -> bool:
+    def is_hex_string(self, str_value: str) -> bool:
         for i in str_value:
             if i.casefold() not in self.HEX_SYMBOLS:
                 return False
         return True
 
-    def is_hex_code(self, str_value, valid_lengths=(3, 4, 6, 8)) -> bool:
+    def is_hex_code(self, str_value: str, valid_lengths=(3, 4, 6, 8)) -> bool:
         if self.is_hex_string(str_value):
             return True if len(str_value) in valid_lengths else False
         else:
             return False
 
-    def get_decimal_from_hex_string(self, hex_str) -> int:
+    def get_decimal_from_hex_string(self, hex_str: str) -> int:
         decimal_value = 0
         for i in range(len(hex_str)):
             if hex_str[i].casefold() in self.HEX_CHARACTERS:
@@ -79,7 +79,7 @@ class MainModel():
             decimal_value += int(summand) * 16 ** (len(hex_str) - 1 - i)
         return decimal_value
 
-    def get_rgb_from_hex_code(self, hex_code) -> tuple:
+    def get_rgb_from_hex_code(self, hex_code: str) -> tuple:
         if len(hex_code) in (3, 4):
             hex_code = self.get_full_hex_code(hex_code)
         red = self.get_decimal_from_hex_string(hex_code[0:2])
@@ -91,16 +91,16 @@ class MainModel():
         else:
             return (red, green, blue)
 
-    def get_name_of_hex_code(self, search_hex) -> str:
+    def get_name_of_hex_code(self, search_hex: str) -> str:
         for css3_name, hex in COLOR_NAMES.items():
             if hex.casefold() == search_hex.casefold():
                 return css3_name
         return ""
 
-    def get_random_hex_string(self, length) -> str:
+    def get_random_hex_string(self, length: int) -> str:
         return "".join(choices(self.HEX_SYMBOLS, k=length))
 
-    def get_full_hex_code(self, short_hex_code) -> str:
+    def get_full_hex_code(self, short_hex_code: str) -> str:
         return "".join([i * 2 for i in short_hex_code])
 
     def get_number_of_unique_colors_converted(self) -> int:
