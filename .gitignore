@@ -1,3 +1,5 @@
 *.pdf
 *.af
 __pycache__
+tests
+trash

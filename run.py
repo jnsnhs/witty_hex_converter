@@ -1,4 +1,4 @@
-from hexconvt.hexconvt import Application
+from hexconvt.main import Application
 
 if __name__ == "__main__":
     app = Application()
